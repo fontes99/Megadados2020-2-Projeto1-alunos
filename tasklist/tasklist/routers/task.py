@@ -6,10 +6,31 @@ from typing import Dict
 from fastapi import APIRouter, HTTPException, Depends
 
 from ..database import DBSession, get_db
-from ..models import Task
+from ..models import Task, User
 
 router = APIRouter()
 
+#================== CHAMADAS USER ==============================
+@router.get(
+    '/users',
+    summary='Reads User list',
+    description='Reads the whole User list.',
+    response_model=Dict[uuid.UUID, User],
+)
+async def read_users(db: DBSession = Depends(get_db)):
+    return db.read_users()
+
+@router.post(
+    '/users',
+    summary='Creates a new user',
+    description='Creates a new user and returns its UUID.',
+    response_model=uuid.UUID,
+)
+async def create_user(user: User, db: DBSession = Depends(get_db)):
+    return db.create_user(user)
+
+
+#================== CHAMADAS TASKS ==============================
 
 @router.get(
     '',
@@ -19,7 +40,6 @@ router = APIRouter()
 )
 async def read_tasks(completed: bool = None, db: DBSession = Depends(get_db)):
     return db.read_tasks(completed)
-
 
 @router.post(
     '',

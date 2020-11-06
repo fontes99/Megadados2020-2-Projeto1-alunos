@@ -10,15 +10,44 @@ from fastapi import Depends
 
 from utils.utils import get_config_filename, get_app_secrets_filename
 
-from .models import Task
+from .models import Task, User
 
 
 class DBSession:
     def __init__(self, connection: conn.MySQLConnection):
         self.connection = connection
 
+
+#==================================================== CHAMADAS USER ==============================
+    def read_users(self):
+        query = 'SELECT BIN_TO_UUID(uuid), name FROM users'
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(query)
+            db_results = cursor.fetchall()
+
+        return {
+            uuid_: User(
+                name=field_name,
+            )
+            for uuid_, field_name in db_results
+        }
+
+    def create_user(self, user: User):
+        uuid_ = uuid.uuid4()
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                'INSERT INTO users VALUES (UUID_TO_BIN(%s), %s)',
+                (str(uuid_), user.name),
+            )
+        self.connection.commit()
+
+        return uuid_
+
+#==================================================== CHAMADAS TASKS ==============================
     def read_tasks(self, completed: bool = None):
-        query = 'SELECT BIN_TO_UUID(uuid), description, completed FROM tasks'
+        query = 'SELECT BIN_TO_UUID(uuid), description, completed, BIN_TO_UUID(user_uuid) FROM tasks'
         if completed is not None:
             query += ' WHERE completed = '
             if completed:
@@ -34,8 +63,9 @@ class DBSession:
             uuid_: Task(
                 description=field_description,
                 completed=bool(field_completed),
+                user_uuid=field_user_uuid
             )
-            for uuid_, field_description, field_completed in db_results
+            for uuid_, field_description, field_completed, field_user_uuid in db_results
         }
 
     def create_task(self, item: Task):
@@ -43,8 +73,8 @@ class DBSession:
 
         with self.connection.cursor() as cursor:
             cursor.execute(
-                'INSERT INTO tasks VALUES (UUID_TO_BIN(%s), %s, %s)',
-                (str(uuid_), item.description, item.completed),
+                'INSERT INTO tasks VALUES (UUID_TO_BIN(%s), %s, %s, UUID_TO_BIN(%s))',
+                (str(uuid_), item.description, item.completed, item.user_uuid),
             )
         self.connection.commit()
 
