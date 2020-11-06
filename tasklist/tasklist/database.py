@@ -45,6 +45,53 @@ class DBSession:
 
         return uuid_
 
+    def read_user(self, uuid_: uuid.UUID):
+        if not self.__user_exists(uuid_):
+            raise KeyError()
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                '''
+                SELECT name
+                FROM users
+                WHERE uuid = UUID_TO_BIN(%s)
+                ''',
+                (str(uuid_), ),
+            )
+            result = cursor.fetchone()
+
+        return User(name=result[0])
+
+    def replace_user(self, uuid_, item: User):
+        if not self.__user_exists(uuid_):
+            raise KeyError()
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                '''
+                UPDATE users SET name=%s
+                WHERE uuid=UUID_TO_BIN(%s)
+                ''',
+                (item.name, str(uuid_)),
+            )
+        self.connection.commit()
+
+    def remove_user(self, uuid_):
+        if not self.__user_exists(uuid_):
+            raise KeyError()
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                'DELETE FROM users WHERE uuid=UUID_TO_BIN(%s)',
+                (str(uuid_), ),
+            )
+        self.connection.commit()
+
+    def remove_all_users(self):
+        with self.connection.cursor() as cursor:
+            cursor.execute('DELETE FROM users')
+        self.connection.commit()
+
 #==================================================== CHAMADAS TASKS ==============================
     def read_tasks(self, completed: bool = None):
         query = 'SELECT BIN_TO_UUID(uuid), description, completed, BIN_TO_UUID(user_uuid) FROM tasks'
@@ -97,7 +144,7 @@ class DBSession:
 
         return Task(description=result[0], completed=bool(result[1]))
 
-    def replace_task(self, uuid_, item):
+    def replace_task(self, uuid_, item: Task):
         if not self.__task_exists(uuid_):
             raise KeyError()
 
@@ -133,6 +180,21 @@ class DBSession:
                 '''
                 SELECT EXISTS(
                     SELECT 1 FROM tasks WHERE uuid=UUID_TO_BIN(%s)
+                )
+                ''',
+                (str(uuid_), ),
+            )
+            results = cursor.fetchone()
+            found = bool(results[0])
+
+        return found
+
+    def __user_exists(self, uuid_: uuid.UUID):
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                '''
+                SELECT EXISTS(
+                    SELECT 1 FROM users WHERE uuid=UUID_TO_BIN(%s)
                 )
                 ''',
                 (str(uuid_), ),

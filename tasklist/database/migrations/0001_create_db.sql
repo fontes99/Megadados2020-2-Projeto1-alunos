@@ -14,7 +14,7 @@ CREATE TABLE tasks (
     description NVARCHAR(1024),
     completed BOOLEAN,
     user_uuid BINARY(16), 
-    FOREIGN KEY (user_uuid) REFERENCES users(uuid)
+    FOREIGN KEY (user_uuid) REFERENCES users(uuid) ON DELETE CASCADE
     
 );
 
