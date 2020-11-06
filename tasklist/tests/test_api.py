@@ -44,40 +44,67 @@ def test_create_and_read_some_tasks():
     tasks = [
         {
             "description": "foo",
-            "completed": False
+            "completed": False,
+            "user_uuid": "4c7abd5a-d8d5-491f-abcf-f9379fc5d95d"
+
         },
         {
             "description": "bar",
-            "completed": True
+            "completed": True,
+            "user_uuid": "4c7abd5a-d8d5-491f-abcf-f9379fc5d95d"
+
         },
         {
-            "description": "baz"
+            "description": "baz",
+            "user_uuid": "4c7abd5a-d8d5-491f-abcf-f9379fc5d95d"
+
+        },
+        {
+            "completed": True,
+            "user_uuid": "4c7abd5a-d8d5-491f-abcf-f9379fc5d95d"
+
+        },
+        {
+            "user_uuid": "4c7abd5a-d8d5-491f-abcf-f9379fc5d95d"
+
         },
         {
             "completed": True
+
         },
+
         {},
     ]
     expected_responses = [
         {
             'description': 'foo',
             'completed': False
+            "user_uuid": "4c7abd5a-d8d5-491f-abcf-f9379fc5d95d"
+
         },
         {
             'description': 'bar',
             'completed': True
+             "user_uuid": "4c7abd5a-d8d5-491f-abcf-f9379fc5d95d"
+
         },
         {
             'description': 'baz',
-            'completed': False
+            'completed': False,
+            'user_uuid': "4c7abd5a-d8d5-491f-abcf-f9379fc5d95d"
+
         },
         {
             'description': 'no description',
-            'completed': True
+            'completed': True,
+            'user_uuid': "4c7abd5a-d8d5-491f-abcf-f9379fc5d95d"
+
         },
         {
             'description': 'no description',
-            'completed': False
+            'completed': False',
+            "user_uuid": "4c7abd5a-d8d5-491f-abcf-f9379fc5d95d"
+
         },
     ]
 
